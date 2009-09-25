@@ -1,0 +1,6 @@
+build
+.DS_Store
+.tmp*
+.project
+HikeCam.xcodeproj/krall.*
+photos
