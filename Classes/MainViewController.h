@@ -11,9 +11,12 @@
 @interface MainViewController : UIViewController {
 	UIView *previewView;
 	UILabel *photoDelayLabel;
+	UIImageView *lastPhotoView;
+	UIButton *takingPhotoButton;
 }
 
 @property (nonatomic, retain) IBOutlet UIView *previewView;
 @property (nonatomic, retain) IBOutlet UILabel *photoDelayLabel;
+@property (nonatomic, retain) IBOutlet UIImageView *lastPhotoView;
 
 @end

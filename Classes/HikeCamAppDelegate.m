@@ -16,7 +16,7 @@
 @synthesize window, mainViewController, flipsideViewController, flipsideNavigationBar, navController;
 @synthesize cameraController;
 @synthesize animationInterval;
-@synthesize soundEnabled, shutterSound, imageSequenceName;
+@synthesize soundEnabled, shutterSound, imageSequenceName, currentImagePath;
 
 void powerCallback(void *refCon, io_service_t service, uint32_t messageType, void *messageArgument)
 {
@@ -98,10 +98,10 @@ void powerCallback(void *refCon, io_service_t service, uint32_t messageType, voi
 	[cameraController performSelector:@selector(startPreview)];
 	sleep(2);
 
-	animationInterval = 30.0;
+	animationInterval = 10.0;
 	[self startAnimation];
 
-	[previewView addSubview:navController.view];
+	[window addSubview:navController.view];
   [window makeKeyAndVisible];
 }
 
@@ -149,6 +149,13 @@ void powerCallback(void *refCon, io_service_t service, uint32_t messageType, voi
 	NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
 	[dateFormatter setDateFormat:@"M-d-Y_hh-mm-ss"];
 	self.imageSequenceName = [dateFormatter stringFromDate:[NSDate date]];
+
+	// Create the directory path
+  NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+  NSString *documentsDirectory = [paths objectAtIndex:0];
+	self.currentImagePath = [NSString stringWithFormat:@"%@/%@", documentsDirectory, imageSequenceName];
+	[[NSFileManager defaultManager] createDirectoryAtPath:currentImagePath withIntermediateDirectories:YES attributes:NULL error:NULL];
+
 	animationTimer = [NSTimer scheduledTimerWithTimeInterval:animationInterval target:self selector:@selector(animCallback) userInfo:nil repeats:YES];
 }
 
@@ -174,7 +181,9 @@ void powerCallback(void *refCon, io_service_t service, uint32_t messageType, voi
 {
 	int seconds = animationInterval;
 	NSLog([NSString stringWithFormat:@"Starting to take a photo, interval: %d", seconds]);
+
 	[cameraController capturePhoto:NO];
+
 	//NSDate *nextWake = [NSDate dateWithTimeIntervalSinceNow:(double)animationInterval];
 	//IOReturn ret = IOPMSchedulePowerEvent((CFDateRef) nextWake, (CFStringRef)@"HikeCam", CFSTR(kIOPMAutoWakeOrPowerOn));
 }
@@ -192,18 +201,27 @@ void powerCallback(void *refCon, io_service_t service, uint32_t messageType, voi
     NSLog(@"cameraControllerReadyStateChanged: %@", aNotification);
 }
 
+-(void) playSound
+{
+	if (soundEnabled)
+		AudioServicesPlaySystemSound(shutterSound);
+}
+
 -(void)cameraController:(id)sender
 			tookPicture:(UIImage*)picture
 			withPreview:(UIImage*)preview
 			   jpegData:(NSData*)rawData
 		imageProperties:(struct __CFDictionary *)imageProperties
 {
+	// Stop Timer
+	[animationTimer invalidate];
 
-	NSLog(@"Taking Photo...");
-	if (soundEnabled)
-		AudioServicesPlaySystemSound(shutterSound);
+	NSLog([NSString stringWithFormat:@"Taking Photo #: %d", photoNum]);
 
-	NSString *_imageName = [NSString stringWithFormat:@"%@.%05d.png", imageSequenceName, photoNum];
+	[NSThread detachNewThreadSelector:@selector(playSound) toTarget:self withObject:nil];
+
+	mainViewController.lastPhotoView.image = picture;
+	NSString *_imageName = [NSString stringWithFormat:@"photo.%05d.png", photoNum];
 	NSData *_imageData = [NSData dataWithData:UIImagePNGRepresentation(picture)];
 
 	if (![self writeApplicationData:_imageData toFile:_imageName]) {
@@ -215,13 +233,8 @@ void powerCallback(void *refCon, io_service_t service, uint32_t messageType, voi
 
 	NSLog(@"Done Taking Photo!");
 
-	// Stop and Restart Timer
-	[animationTimer invalidate];
+	//Restart Timer
 	animationTimer = [NSTimer scheduledTimerWithTimeInterval:animationInterval target:self selector:@selector(animCallback) userInfo:nil repeats:YES];
-
-
-	// [cameraController performSelector:@selector(stopPreview)];
-	// [cameraController performSelector:@selector(startPreview)];
 }
 
 -(void)cameraController:(id)sender
@@ -251,13 +264,7 @@ void powerCallback(void *refCon, io_service_t service, uint32_t messageType, voi
 }
 
 - (BOOL) writeApplicationData:(NSData *)data toFile:(NSString *)fileName {
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-    NSString *documentsDirectory = [paths objectAtIndex:0];
-    if (!documentsDirectory) {
-        NSLog(@"Documents directory not found!");
-        return NO;
-    }
-    NSString *appFile = [documentsDirectory stringByAppendingPathComponent:fileName];
+    NSString *appFile = [currentImagePath stringByAppendingPathComponent:fileName];
     return ([data writeToFile:appFile atomically:YES]);
 }
 

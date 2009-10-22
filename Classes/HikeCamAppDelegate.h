@@ -30,6 +30,7 @@
 	int photoNum;
 	NSString *rootImagePath;
 	NSString *imageSequenceName;
+	NSString *currentImagePath;
 	UINavigationController *navController;
 	MainViewController *mainViewController;
 	FlipsideViewController *flipsideViewController;
@@ -49,6 +50,7 @@
 @property (nonatomic, retain) IBOutlet UIWindow *window;
 @property (nonatomic, retain) id cameraController;
 @property (nonatomic, retain) NSString *imageSequenceName;
+@property (nonatomic, retain) NSString *currentImagePath;
 
 @property NSTimeInterval animationInterval;
 @property bool soundEnabled;

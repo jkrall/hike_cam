@@ -11,7 +11,7 @@
 
 @implementation MainViewController
 
-@synthesize previewView, photoDelayLabel;
+@synthesize previewView, photoDelayLabel, lastPhotoView;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
     if (self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]) {
