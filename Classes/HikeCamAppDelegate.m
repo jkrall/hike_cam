@@ -98,7 +98,7 @@ void powerCallback(void *refCon, io_service_t service, uint32_t messageType, voi
 	[cameraController performSelector:@selector(startPreview)];
 	sleep(2);
 
-	animationInterval = 10.0;
+	animationInterval = 30.0;
 	[self startAnimation];
 
 	[window addSubview:navController.view];
