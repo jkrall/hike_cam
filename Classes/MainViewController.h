@@ -9,7 +9,11 @@
 #import <UIKit/UIKit.h>
 
 @interface MainViewController : UIViewController {
-    
+	UIView *previewView;
+	UILabel *photoDelayLabel;
 }
+
+@property (nonatomic, retain) IBOutlet UIView *previewView;
+@property (nonatomic, retain) IBOutlet UILabel *photoDelayLabel;
 
 @end

@@ -14,32 +14,45 @@
 #import <Foundation/NSKeyValueObserving.h>
 
 @class PLCameraController;
-@class RootViewController;
+@class MainViewController;
+@class FlipsideViewController;
 
-@interface HikeCamAppDelegate : NSObject <UIApplicationDelegate, UINavigationControllerDelegate, UIImagePickerControllerDelegate> {
-    UIWindow *window;
-    RootViewController *rootViewController;
+@interface HikeCamAppDelegate : NSObject <UIApplicationDelegate, UINavigationControllerDelegate> {
+  UIWindow *window;
+	id cameraController;
 	io_connect_t root_port;
 	io_object_t notifier;
-	
-    NSTimer *animationTimer;
-    NSTimeInterval animationInterval;
+
+  NSTimer *animationTimer;
+  NSTimeInterval animationInterval;
 	SystemSoundID shutterSound;
 	bool soundEnabled;
-	int photoNum;	
-	NSString *rootImagePath;	
+	int photoNum;
+	NSString *rootImagePath;
+	NSString *imageSequenceName;
+	UINavigationController *navController;
+	MainViewController *mainViewController;
+	FlipsideViewController *flipsideViewController;
+	UINavigationBar *flipsideNavigationBar;
 }
+
+@property (nonatomic, retain) IBOutlet UINavigationController *navController;
+@property (nonatomic, retain) IBOutlet MainViewController *mainViewController;
+@property (nonatomic, retain) UINavigationBar *flipsideNavigationBar;
+@property (nonatomic, retain) FlipsideViewController *flipsideViewController;
+
+- (IBAction) settingsButton;
+- (IBAction) exitButton;
 
 - (void)powerMessageReceived:(uint32_t)messageType withArgument:(void *)messageArgument;
 
 @property (nonatomic, retain) IBOutlet UIWindow *window;
-@property (nonatomic, retain) IBOutlet RootViewController *rootViewController;
+@property (nonatomic, retain) id cameraController;
+@property (nonatomic, retain) NSString *imageSequenceName;
 
 @property NSTimeInterval animationInterval;
 @property bool soundEnabled;
 @property SystemSoundID shutterSound;
-
-- (void)takePicture:(id)sender;
 
 @end
 
@@ -47,12 +60,6 @@
 - (void)startAnimation;
 - (void)stopAnimation;
 - (void)animCallback;
-@end
-
-@interface HikeCamAppDelegate (UIImagePickerControllerDelegate)
-
-- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info;
-
 @end
 
 @interface HikeCamAppDelegate (UINavigationControllerDelegate)
